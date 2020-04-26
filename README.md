@@ -1,6 +1,4 @@
-# Learning D3.js - The basics
-[![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/willamesoares)
-
+# A Visualization of FBI crime data using D3
 Although this repository was created for learning purposes, it can be easily used as a boilerplate for [D3.js](https://d3js.org/) projects.
 
 One of the biggest advantages of this project setup is that it comes with the [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html) package, which  gives you a really simple live reloading. As you will be working mainly with visual output, it is a great thing to have things updated without you having to change to your browser and reload the page manually.
