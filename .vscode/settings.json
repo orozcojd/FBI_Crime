@@ -1,0 +1,34 @@
+{
+  "files.autoSave":"onFocusChange",
+  "explorer.confirmDragAndDrop": false,
+  "window.zoomLevel": 1,
+  "editor.tabSize": 2,
+  "editor.tabCompletion": "on",
+  "vetur.format.options.useTabs": true,
+  "explorer.confirmDelete": false,
+  "eslint.options": {
+      "extensions": [".html", ".js", ".py"],
+      "rules": {
+          "quotes": [2, "single"]
+      }
+  },
+  "eslint.validate": [
+      "python",
+      "javascript",
+      "javascriptreact",
+      { "language": "html","autoFix": true },
+      { "language": "vue", "autoFix": true }
+  ],
+  "eslint.run": "onSave",
+  "eslint.enable": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+  },
+  "eslint.format.enable": true,
+  "eslint.alwaysShowStatus": true,
+  "eslint.autoFixOnSave": true,
+  "eslint.codeAction.disableRuleComment": {
+  
+  }
+}
