@@ -3,13 +3,57 @@ import * as d3 from 'd3';
 const window = document.getElementById('root');
 const width = 1000;
 const height = 1000;
-console.log(height);
+const DETAIL_MAP = {
+    name: 'Location',
+    value: 'Amount'
+};
+
 // calls pack on constructed heirarchy
 const pack = data => d3.pack()
     .size([width - 2, height - 2])
     .padding(1)(d3.hierarchy({children: data})
         .sum(d => d.value));
 
+// generates a random string ID 
+const gernateRandomId = () => {
+    return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+};
+const toggleDetailsCard = () => {
+    const card = d3.select('#details-card');
+    const display = card.style('display');
+    card.style('display', () => display === 'block' ? 'none' : 'block')
+        .style('left', `${d3.event.pageX}px`)
+        .style('top', `${d3.event.pageY}px`);
+};
+const populateCardDetails = (nodeData) => {
+    let dataDetails = ''; 
+    for(const k of Object.keys(nodeData.data)) {
+        const v = nodeData.data[k];
+        dataDetails += `<div class="flex flex--row"><div class="details-card__details">${DETAIL_MAP[k]}</div><div>${v}</div></div>`;
+    }
+    d3.select('#details-card')
+        .html(dataDetails);
+};
+function handleMouseOver(data) {
+    // const circle = d3.select(this)
+    //     .select('circle');
+    // const newRad = circle.attr('r') * 1.4;
+    // circle.attr('r', newRad);
+    populateCardDetails(data);
+    toggleDetailsCard();
+}
+
+function handleMouseLeave() {
+    // const circle = d3.select(this)
+    //     .select('circle');
+    // const newRad = circle.attr('r') / 1.4;
+    // circle.attr('r', newRad);
+    d3.select('#hover-details')
+        .html('');
+    toggleDetailsCard();
+}
 
 (async function () {
     // Selecting and appending elements
@@ -22,15 +66,8 @@ const pack = data => d3.pack()
         .select('#root')
         .append('svg')
         .attr('width', width)
-        .attr('height', height);
-    // svg.append('line')
-    //     .attr('x1', 100)
-    //     .attr('y1', 100)
-    //     .attr('x2', 200) 
-    //     .attr('y2', 200)
-    //     .style('stroke', 'rgb(255,0,0)')
-    //     .style('stroke-width', 2);    
-
+        .attr('height', height)
+        .attr('text-anchor', 'middle');
     
     // Loading external data
     const dataset = await d3.csv('/data/fbi_crime_2016.csv');
@@ -60,18 +97,26 @@ const pack = data => d3.pack()
 
     leaf.append('circle')
         .attr('id', d => {
-            // console.log(d);
-            return d.data.name;
+            d.leafUid = gernateRandomId();
+            return d.leafUid;
         })
         .attr('r', d => d.r)
         .attr('fill-opacity', 0.7)
         .attr('fill', d => color(d.data.name));
 
-    leaf.append('clipPath');
-    // .append('use')
+    leaf.append('clipPath')
+        .attr('id', d => {
+            d.clipUid = gernateRandomId();
+            return d.clipUid;
+        })
+        .append('use')
+        .attr('xlink:href', d => `#${d.leafUid}`);
+        
+
     // .attr('xlink:href', d => d.leafUid.href);
     
     leaf.append('text')
+        .attr('clip-path', d => `url(#${d.clipUid})`)
         .selectAll('tspan')
         .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
         .join('tspan')
@@ -79,5 +124,8 @@ const pack = data => d3.pack()
         .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
         .text(d => d);
     
-    
+    // handle mouseover event
+    leaf.on('mouseenter', handleMouseOver);
+    leaf.on('mouseleave', handleMouseLeave);
+
 })();
