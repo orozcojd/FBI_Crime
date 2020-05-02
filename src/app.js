@@ -101,95 +101,74 @@ function update() {
         }
     });
     const t = d3.transition()
-        .duration(500);
+        .duration(750);
 
     const root = pack(filteredData);
   
     const leaf = svg.selectAll('g')
         .data(root.leaves(), function(d) { 
             return d ? d.data.name : this.id; 
+        });
+
+    leaf.on('mouseenter', handleMouseOver);
+    leaf.on('mouseleave', handleMouseLeave);
+
+
+    const nodeEnter = leaf
+        .enter()
+        .append('g')
+        .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
+
+
+    nodeEnter.append('circle')
+        .attr('id', d => {
+            if(!d.id) {
+                d.leafUid = gernateRandomId();
+                return d.leafUid;
+            }
         })
-        .join(enter => {
-            const node = enter.append('g')
-                .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
-            node.append('circle')
-                .attr('id', d => {
-                    if(!d.id) {
-                        d.leafUid = gernateRandomId();
-                        return d.leafUid;
-                    }
-                })
-                .attr('r', d => d.r)
-                .attr('fill-opacity', 0.7)
-                .attr('fill', d => color(filteredData)(d.data.name));
-            node.append('clipPath')
-                .attr('id', d => {
-                    d.clipUid = gernateRandomId();
-                    return d.clipUid;
-                })
-                .append('use')
-                .attr('xlink:href', d => `#${d.leafUid}`);
-            node.append('text')
-                .attr('clip-path', d => `url(#${d.clipUid})`)
-                .selectAll('tspan')
-                .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
-                .join('tspan')
-                .attr('x', 0)
-                .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-                .text(d => d);
-            // enter.on('mouseenter', handleMouseOver);
-            // enter.on('mouseleave', handleMouseLeave);
-        },
-        update => {
-            update.select('g')
-                .select('circle')
-                .attr('r', d => d.r);
-            update.select('g').select('clipPath')
-                .attr('id', d => {
-                    d.clipUid = gernateRandomId();
-                    return d.clipUid;
-                })
-                .select('use')
-                .attr('xlink:href', d => `#${d.leafUid}`);
-            update.select('g').select('text')
-                .attr('clip-path', d => `url(#${d.clipUid})`)
-                .selectAll('tspan')
-                .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
-                .join('tspan')
-                .attr('x', 0)
-                .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-                .text(d => d);
-            update.call(update => update.transition(t)
-                .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`));
-        },
-        exit => exit
-            .call(exit => exit.transition(t))
-            .remove()
-        );
-        // .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
-    // leaf.append('circle')
-    //     .attr('id', d => {
-    //         if(!d.id) {
-    //             d.leafUid = gernateRandomId();
-    //             return d.leafUid;
-    //         }
-    //     })
-    //     .attr('r', d => d.r)
-    //     .attr('fill-opacity', 0.7)
-    //     .attr('fill', d => color(filteredData)(d.data.name));
+        .attr('r', d => d.r)
+        .attr('fill-opacity', 0.7)
+        .attr('fill', d => color(filteredData)(d.data.name));
+
+    nodeEnter.append('clipPath')
+        .attr('id', d => {
+            d.clipUid = gernateRandomId();
+            return d.clipUid;
+        })
+        .append('use')
+        .attr('xlink:href', d => `#${d.leafUid}`);
+
+    nodeEnter.append('text')
+        .attr('clip-path', d => `url(#${d.clipUid})`)
+        .selectAll('tspan')
+        .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
+        .join('tspan')
+        .attr('x', 0)
+        .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
+        .text(d => d);
+          
+    
+    leaf.select('circle')
+        .transition(t)
+        .attr('r', d => d.r)
+        .attr('fill-opacity', 0.7)
+        .attr('fill', d => color(filteredData)(d.data.name));
+    leaf.transition(t)
         
-    // leaf.append('clipPath')
+        .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
+    
+    
+    // leaf.select('clipPath')
+    //     .transition().duration(750)
     //     .attr('id', d => {
     //         d.clipUid = gernateRandomId();
     //         return d.clipUid;
     //     })
     //     .append('use')
     //     .attr('xlink:href', d => `#${d.leafUid}`);
-  
-
-    // .attr('xlink:href', d => d.leafUid.href);
-
-    // leaf.append('text')
+    // leaf.selectAll('text')
+    //     .transition().duration(750)
     //     .attr('clip-path', d => `url(#${d.clipUid})`)
     //     .selectAll('tspan')
     //     .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
@@ -197,10 +176,9 @@ function update() {
     //     .attr('x', 0)
     //     .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
     //     .text(d => d);
-
+    leaf.exit().remove();
     // handle mouseover event
-    // leaf.on('mouseenter', handleMouseOver);
-    // leaf.on('mouseleave', handleMouseLeave);
+
 
     function updateHierarchy(newKey) {
         filteredData.map(d => {
