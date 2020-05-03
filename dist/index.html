@@ -10,29 +10,29 @@
     <script src="https://unpkg.com/material-components-web@v4.0.0/dist/material-components-web.min.js"></script>
   </head>
   <body>
-    <h2 class="center-align">Learning D3.js - The basics!</h2>
-    <div class="flex">
-      <label for="crimes">Select the crime:</label>
-      
-      <select name="crimes" id="crimes">
-        <option value="Burglary">Burglary</option>
-        <option value="Aggravated assault">Aggravated Assault</option>
-        <option value="Larceny-theft">Larceny-theft</option>
-        <option value="Motor vehicle theft">Motor vehicle theft</option>
-        <option value="Murder and nonnegligent manslaughter">Murder and nonnegligent manslaughter</option>
-        <option value="Property crime">Property crime</option>
-        <option value="Rape_Revised">Rape (Revised)</option>
-        <option value="Rape_Legacy">Rape (Legacy)</option>
-        <option value="Robbery">Robbery</option>
-      </select>
+    <div class="app-container">
+      <h2 class="center-align">Learning D3.js - The basics!</h2>
+      <div class="flex">
+        <label for="crimes">Select the crime:</label>
+        <select name="crimes" id="crimes">
+          <option value="Burglary">Burglary</option>
+          <option value="Aggravated assault">Aggravated Assault</option>
+          <option value="Larceny-theft">Larceny-theft</option>
+          <option value="Motor vehicle theft">Motor vehicle theft</option>
+          <option value="Murder and nonnegligent manslaughter">Murder and nonnegligent manslaughter</option>
+          <option value="Property crime">Property crime</option>
+          <option value="Rape_Revised">Rape (Revised)</option>
+          <option value="Rape_Legacy">Rape (Legacy)</option>
+          <option value="Robbery">Robbery</option>
+        </select>
 
-    </div>
-    <div id="root" class="center-align">
-      <div id="details-card" class="mdc-card mdc-card__media--square">
-        <div class="details-card__title"></div>
       </div>
-    </div>
-
+      <div id="root" class="center-align">
+        <div id="details-card" class="mdc-card mdc-card__media--square">
+          <div class="details-card__title"></div>
+        </div>
+      </div>
+  </div>
     <script type="text/javascript" src="/dist/app.bundle.js"></script>
   </body>
 </html>

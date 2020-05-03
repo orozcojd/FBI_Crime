@@ -39,22 +39,19 @@ const populateCardDetails = (nodeData) => {
         .html(dataDetails);
 };
 function handleMouseOver(data) {
-    // const circle = d3.select(this)
-    //     .select('circle');
-    // const newRad = circle.attr('r') * 1.4;
-    // circle.attr('r', newRad);
     populateCardDetails(data);
     toggleDetailsCard();
 }
 
 function handleMouseLeave() {
-    // const circle = d3.select(this)
-    //     .select('circle');
-    // const newRad = circle.attr('r') / 1.4;
-    // circle.attr('r', newRad);
     d3.select('#hover-details')
         .html('');
     toggleDetailsCard();
+}
+function removeNode(node) {
+    const index = filteredData.findIndex(d => d.name === node.data.name);
+    filteredData.splice(1, index);
+    update();
 }
 const color = data => d3.scaleOrdinal(data.map(d => d.name), d3.schemeCategory10);
 
@@ -90,6 +87,7 @@ const svg = d3
 function update() {
     const userSelect = selection.property('value');
     const filteredData = [];
+
     dataset.forEach(d => {
         const areaTrim = d.Area.trim();
         if (areaTrim.length) {
@@ -100,90 +98,60 @@ function update() {
             });
         }
     });
+    console.log(filteredData);
     const t = d3.transition()
         .duration(750);
 
     const root = pack(filteredData);
-  
-    const leaf = svg.selectAll('g')
+    // leaf.on('mouseenter', handleMouseOver);
+    // leaf.on('mouseleave', handleMouseLeave);
+    svg.selectAll('g')
         .data(root.leaves(), function(d) { 
             return d ? d.data.name : this.id; 
-        });
-
-    leaf.on('mouseenter', handleMouseOver);
-    leaf.on('mouseleave', handleMouseLeave);
-
-
-    const nodeEnter = leaf
-        .enter()
-        .append('g')
-        .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
-
-
-    nodeEnter.append('circle')
-        .attr('id', d => {
-            if(!d.id) {
-                d.leafUid = gernateRandomId();
-                return d.leafUid;
-            }
         })
-        .attr('r', d => d.r)
-        .attr('fill-opacity', 0.7)
-        .attr('fill', d => color(filteredData)(d.data.name));
+        .join(enter => {
+            const node = enter.append('g')
+                .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
+            node.on('mouseenter', handleMouseOver);
+            node.on('mouseleave', handleMouseLeave);
+            // node.on('click', removeNode);
+            node.append('circle')
+                .transition(t)
+                .attr('id', d => {
+                    if(!d.id) {
+                        d.leafUid = gernateRandomId();
+                        return d.leafUid;
+                    }
+                })
+                .attr('r', d => d.r)
+                .attr('fill-opacity', 0.7)
+                .attr('fill', d => color(filteredData)(d.data.name));
+            node.append('clipPath')
+                .attr('id', d => {
+                    d.clipUid = gernateRandomId();
+                    return d.clipUid;
+                })
+                .append('use')
+                .attr('xlink:href', d => `#${d.leafUid}`);
+            node.append('text')
+                .attr('clip-path', d => `url(#${d.clipUid})`)
+                .selectAll('tspan')
+                .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
+                .join('tspan')
+                .attr('x', 0)
+                .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
+                .text(d => d);
+        },
+        update => {
+            update.select('circle')
+                .transition(t)
+                .attr('r', d => d.r)
+                .attr('fill-opacity', 0.7)
+                .attr('fill', d => color(filteredData)(d.data.name));
+            update.transition(t)
+                .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
+        },
+        exit => exit.exit().remove()
+        );
 
-    nodeEnter.append('clipPath')
-        .attr('id', d => {
-            d.clipUid = gernateRandomId();
-            return d.clipUid;
-        })
-        .append('use')
-        .attr('xlink:href', d => `#${d.leafUid}`);
-
-    nodeEnter.append('text')
-        .attr('clip-path', d => `url(#${d.clipUid})`)
-        .selectAll('tspan')
-        .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
-        .join('tspan')
-        .attr('x', 0)
-        .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-        .text(d => d);
-          
-    
-    leaf.select('circle')
-        .transition(t)
-        .attr('r', d => d.r)
-        .attr('fill-opacity', 0.7)
-        .attr('fill', d => color(filteredData)(d.data.name));
-    leaf.transition(t)
-        
-        .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
-    
-    
-    // leaf.select('clipPath')
-    //     .transition().duration(750)
-    //     .attr('id', d => {
-    //         d.clipUid = gernateRandomId();
-    //         return d.clipUid;
-    //     })
-    //     .append('use')
-    //     .attr('xlink:href', d => `#${d.leafUid}`);
-    // leaf.selectAll('text')
-    //     .transition().duration(750)
-    //     .attr('clip-path', d => `url(#${d.clipUid})`)
-    //     .selectAll('tspan')
-    //     .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
-    //     .join('tspan')
-    //     .attr('x', 0)
-    //     .attr('y', (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-    //     .text(d => d);
-    leaf.exit().remove();
-    // handle mouseover event
-
-
-    function updateHierarchy(newKey) {
-        filteredData.map(d => {
-            d.value = parseInt(d._data[newKey].trim().replace(',', ''));
-        });
-        update(filteredData);
-    }
 }
