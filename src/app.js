@@ -49,12 +49,12 @@ function handleMouseLeave() {
     toggleDetailsCard();
 }
 function removeNode(node) {
-    const index = filteredData.findIndex(d => d.name === node.data.name);
-    filteredData.splice(1, index);
+    const index = dataset.findIndex(d => d.Area.trim() === node.data.name);
+
+    dataset.splice(index, 1);
     update();
 }
 const color = data => d3.scaleOrdinal(data.map(d => d.name), d3.schemeCategory10);
-
 
 const selection = d3.select('#crimes')
     .on('change', () => {
@@ -77,34 +77,27 @@ const svg = d3
         .append('text')
         .text(`D3 version: ${d3.version}`);
 
-    
     // Loading external data
-    dataset = await d3.csv('/data/fbi_crime_2016.csv');
-    // dataset.forEach(d => console.log(d))
+    const response = await d3.csv('/data/fbi_crime_2016.csv');
+    dataset = response.filter(d => d.Area.trim());
     update();
 })();
 
 function update() {
     const userSelect = selection.property('value');
     const filteredData = [];
-
     dataset.forEach(d => {
         const areaTrim = d.Area.trim();
-        if (areaTrim.length) {
-            filteredData.push({
-                name: areaTrim,
-                value: parseInt(d[userSelect].trim().replace(',', '')),
-                _data: d
-            });
-        }
+        filteredData.push({
+            name: areaTrim,
+            value: parseInt(d[userSelect].trim().replace(',', '')),
+            _data: d
+        });
     });
-    console.log(filteredData);
     const t = d3.transition()
         .duration(750);
 
     const root = pack(filteredData);
-    // leaf.on('mouseenter', handleMouseOver);
-    // leaf.on('mouseleave', handleMouseLeave);
     svg.selectAll('g')
         .data(root.leaves(), function(d) { 
             return d ? d.data.name : this.id; 
@@ -114,7 +107,7 @@ function update() {
                 .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
             node.on('mouseenter', handleMouseOver);
             node.on('mouseleave', handleMouseLeave);
-            // node.on('click', removeNode);
+            node.on('click', removeNode);
             node.append('circle')
                 .transition(t)
                 .attr('id', d => {
@@ -145,13 +138,11 @@ function update() {
         update => {
             update.select('circle')
                 .transition(t)
-                .attr('r', d => d.r)
-                .attr('fill-opacity', 0.7)
-                .attr('fill', d => color(filteredData)(d.data.name));
+                .attr('r', d => d.r);
             update.transition(t)
                 .attr('transform', d => `translate(${d.x + 1},${d.y + 1})`);
         },
-        exit => exit.exit().remove()
+        exit => exit.transition().remove()
         );
 
 }
